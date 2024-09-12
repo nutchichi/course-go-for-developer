@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"nutchichi/flight"
 	"strings"
 	"time"
+
+	"github.com/nutchichi/course-go-for-developer/flight"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -81,7 +82,7 @@ func main() {
 	r.GET("/flights/:id", fh.GetFlightByIDHandler)
 	r.GET("/flights", fh.GetFlightsHandler)
 	r.POST("/flights/create", fh.CreateFlightHandler)
-	r.POST("/flights/:id/update", fh.UpdateFlightHandler)
-	r.GET("/flights/:id/delete", fh.DeleteFlightHandler)
+	r.PUT("/flights/:id", fh.UpdateFlightHandler)
+	r.DELETE("/flights/:id", fh.DeleteFlightHandler)
 	r.Run(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 }

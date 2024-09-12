@@ -4,7 +4,7 @@ import (
 	"database/sql"
 )
 
-type FlightDB struct {
+type FtDB struct {
 	ID          int    `db:"id"`
 	Number      int    `db:"airline_number"`
 	AirlineCode string `db:"airline_code"`
@@ -12,75 +12,73 @@ type FlightDB struct {
 	Arrival     string `db:"arrival"`
 }
 
-type flightRepositoryDB struct {
+type ftRepository struct {
 	db *sql.DB
 }
 
-type FlightRepository interface {
-	GetAll() ([]FlightDB, error)
-	GetById(int) (*FlightDB, error)
-	Create(FlightDB) error
-	UpdateById(int, FlightDB) (FlightDB, error)
+type FtRepository interface {
+	GetAll() ([]FtDB, error)
+	GetById(int) (*FtDB, error)
+	Create(FtDB) error
+	UpdateById(int, FtDB) (FtDB, error)
 	DeleteById(int) error
 }
 
-func NewFlightRepositoryDB(db *sql.DB) FlightRepository {
-	return flightRepositoryDB{db: db}
+func NewFlightRepositoryDB(db *sql.DB) FtRepository {
+	return ftRepository{db: db}
 }
 
-func (r flightRepositoryDB) GetAll() ([]FlightDB, error) {
-
-	row, err := r.db.Query("select id, airline_number , airline_code, destination, arrival from flights;")
+func (r ftRepository) GetAll() ([]FtDB, error) {
+	query := "select id, airline_number , airline_code, destination, arrival from flights;"
+	row, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 
-	var flights []FlightDB
+	var ftDBs []FtDB
 	for row.Next() {
-		var f FlightDB
-		err := row.Scan(&f.ID, &f.Number, &f.AirlineCode, &f.Destination, &f.Arrival)
+		var ftDB FtDB
+		err := row.Scan(&ftDB.ID, &ftDB.Number, &ftDB.AirlineCode, &ftDB.Destination, &ftDB.Arrival)
 		if err != nil {
 			return nil, err
 		}
-		flights = append(flights, f)
+		ftDBs = append(ftDBs, ftDB)
 	}
 
-	return flights, nil
+	return ftDBs, nil
 }
 
-func (r flightRepositoryDB) GetById(id int) (*FlightDB, error) {
-	flight := FlightDB{}
+func (r ftRepository) GetById(id int) (*FtDB, error) {
+	ftDB := FtDB{}
 	query := "SELECT id, airline_number, airline_code, destination, arrival FROM flights WHERE id=$1;"
 	row := r.db.QueryRow(query, id)
 
-	err := row.Scan(&flight.ID, &flight.Number, &flight.AirlineCode, &flight.Destination, &flight.Arrival)
+	err := row.Scan(&ftDB.ID, &ftDB.Number, &ftDB.AirlineCode, &ftDB.Destination, &ftDB.Arrival)
 	if err != nil {
 		return nil, err
 	}
-	return &flight, nil
+	return &ftDB, nil
 }
 
-func (r flightRepositoryDB) UpdateById(id int, flight FlightDB) (FlightDB, error) {
-	// var f FlightDB
+func (r ftRepository) UpdateById(id int, ftDB FtDB) (FtDB, error) {
 	query := "UPDATE flights SET airline_number=$1, airline_code=$2, destination=$3, arrival=$4 WHERE id=$5 RETURNING id, airline_number, airline_code, destination, arrival;"
-
 	row := r.db.QueryRow(
 		query,
-		flight.Number,
-		flight.AirlineCode,
-		flight.Destination,
-		flight.Arrival,
+		ftDB.Number,
+		ftDB.AirlineCode,
+		ftDB.Destination,
+		ftDB.Arrival,
 		id)
 
-	err := row.Scan(&flight.ID, &flight.Number, &flight.AirlineCode, &flight.Destination, &flight.Arrival)
+	err := row.Scan(&ftDB.ID, &ftDB.Number, &ftDB.AirlineCode, &ftDB.Destination, &ftDB.Arrival)
 	if err != nil {
-		return FlightDB{}, err
+		return FtDB{}, err
 	}
 
-	return flight, err
+	return ftDB, err
 }
 
-func (r flightRepositoryDB) DeleteById(id int) error {
+func (r ftRepository) DeleteById(id int) error {
 	query := "DELETE FROM flights WHERE id=$1;"
 	_, err := r.db.Exec(query, id)
 	if err != nil {
@@ -90,17 +88,17 @@ func (r flightRepositoryDB) DeleteById(id int) error {
 	return nil
 }
 
-func (r flightRepositoryDB) Create(flight FlightDB) error {
+func (r ftRepository) Create(ftDB FtDB) error {
 	query := `
     INSERT INTO flights (airline_number, airline_code, destination, arrival)
     VALUES ($1, $2, $3, $4);`
 
 	_, err := r.db.Exec(
 		query,
-		flight.Number,
-		flight.AirlineCode,
-		flight.Destination,
-		flight.Arrival,
+		ftDB.Number,
+		ftDB.AirlineCode,
+		ftDB.Destination,
+		ftDB.Arrival,
 	)
 
 	return err

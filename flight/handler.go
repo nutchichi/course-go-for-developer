@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type flightHandler struct {
-	flightSrv FlightService
+type ftHandler struct {
+	ftSrv FtService
 }
 
-func NewFlightHandler(flightSrv FlightService) flightHandler {
-	return flightHandler{flightSrv: flightSrv}
+func NewFlightHandler(ftSrv FtService) ftHandler {
+	return ftHandler{ftSrv: ftSrv}
 }
 
-func (h flightHandler) PingHandler(c *gin.Context) {
+func (h ftHandler) PingHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
 
-func (h flightHandler) GetFlightsHandler(c *gin.Context) {
-	f, err := h.flightSrv.GetFlights()
+func (h ftHandler) GetFlightsHandler(c *gin.Context) {
+	ftRes, err := h.ftSrv.GetFlights()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    9999,
@@ -31,12 +31,12 @@ func (h flightHandler) GetFlightsHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, f)
+	c.JSON(200, ftRes)
 
 }
 
-func (h flightHandler) GetFlightByIDHandler(c *gin.Context) {
-	i, err := strconv.Atoi(c.Param("id"))
+func (h ftHandler) GetFlightByIDHandler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    9999,
@@ -45,20 +45,20 @@ func (h flightHandler) GetFlightByIDHandler(c *gin.Context) {
 		return
 	}
 
-	f, err := h.flightSrv.GetFlight(i)
+	ftRes, err := h.ftSrv.GetFlight(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusNoContent, gin.H{
 			"code":    9999,
 			"message": "Flight not found",
 		})
 		return
 	}
 
-	c.JSON(200, f)
+	c.JSON(200, ftRes)
 }
 
-func (h flightHandler) CreateFlightHandler(c *gin.Context) {
-	var request NewFlightRequest
+func (h ftHandler) CreateFlightHandler(c *gin.Context) {
+	var request FtRequest
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -68,7 +68,7 @@ func (h flightHandler) CreateFlightHandler(c *gin.Context) {
 		return
 	}
 
-	err = h.flightSrv.NewFlight(request)
+	err = h.ftSrv.NewFlight(request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    9999,
@@ -83,8 +83,8 @@ func (h flightHandler) CreateFlightHandler(c *gin.Context) {
 	})
 }
 
-func (h flightHandler) UpdateFlightHandler(c *gin.Context) {
-	i, err := strconv.Atoi(c.Param("id"))
+func (h ftHandler) UpdateFlightHandler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -94,8 +94,8 @@ func (h flightHandler) UpdateFlightHandler(c *gin.Context) {
 		return
 	}
 
-	var request NewFlightRequest
-	err = c.ShouldBindJSON(&request)
+	var ftReq FtRequest
+	err = c.ShouldBindJSON(&ftReq)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    9999,
@@ -104,7 +104,7 @@ func (h flightHandler) UpdateFlightHandler(c *gin.Context) {
 		return
 	}
 
-	f, err := h.flightSrv.UpdateFlight(i, request)
+	ftRes, err := h.ftSrv.UpdateFlight(id, ftReq)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    9999,
@@ -113,12 +113,12 @@ func (h flightHandler) UpdateFlightHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, f)
+	c.JSON(http.StatusOK, ftRes)
 
 }
 
-func (h flightHandler) DeleteFlightHandler(c *gin.Context) {
-	i, err := strconv.Atoi(c.Param("id"))
+func (h ftHandler) DeleteFlightHandler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -128,7 +128,7 @@ func (h flightHandler) DeleteFlightHandler(c *gin.Context) {
 		return
 	}
 
-	f, err := h.flightSrv.DeleteFlight(i)
+	ftRes, err := h.ftSrv.DeleteFlight(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    9999,
@@ -136,5 +136,5 @@ func (h flightHandler) DeleteFlightHandler(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, f)
+	c.JSON(http.StatusOK, ftRes)
 }

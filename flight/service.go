@@ -1,6 +1,12 @@
 package flight
 
-type FlightData struct {
+type FtResponse struct {
+	Code    int      `json:"code"`
+	Message string   `json:"message"`
+	Data    []FtData `json:"data"`
+}
+
+type FtData struct {
 	ID          int    `json:"id"`
 	Number      int    `json:"airline_number"`
 	AirlineCode string `json:"airline_code"`
@@ -8,151 +14,145 @@ type FlightData struct {
 	Arrival     string `json:"arrival"`
 }
 
-type FlightResponse struct {
-	Code    int          `json:"code"`
-	Message string       `json:"message"`
-	Data    []FlightData `json:"data"`
-}
-
-type NewFlightRequest struct {
+type FtRequest struct {
 	Number      int    `json:"airline_number"`
 	AirlineCode string `json:"airline_code"`
 	Destination string `json:"destination"`
 	Arrival     string `json:"arrival"`
 }
 
-type FlightService interface {
-	GetFlights() (FlightResponse, error)
-	GetFlight(int) (*FlightResponse, error)
-	NewFlight(NewFlightRequest) error
-	UpdateFlight(int, NewFlightRequest) (*FlightResponse, error)
-	DeleteFlight(int) (*FlightResponse, error)
+type FtService interface {
+	GetFlights() (FtResponse, error)
+	GetFlight(int) (*FtResponse, error)
+	NewFlight(FtRequest) error
+	UpdateFlight(int, FtRequest) (*FtResponse, error)
+	DeleteFlight(int) (*FtResponse, error)
 }
 
-type flightService struct {
-	flightRepo FlightRepository
+type ftService struct {
+	ftRepo FtRepository
 }
 
-func NewFlightService(flightRepo FlightRepository) FlightService {
-	return flightService{flightRepo: flightRepo}
+func NewFlightService(flightRepo FtRepository) FtService {
+	return ftService{ftRepo: flightRepo}
 }
 
-func (s flightService) GetFlights() (FlightResponse, error) {
-	flights, err := s.flightRepo.GetAll()
+func (s ftService) GetFlights() (FtResponse, error) {
+	fts, err := s.ftRepo.GetAll()
 	if err != nil {
-		return FlightResponse{
+		return FtResponse{
 			Code:    500,
 			Message: err.Error(),
 		}, err
 	}
 
-	filghtReponses := FlightResponse{}
-	dataAll := []FlightData{}
-	for _, f := range flights {
+	ftRes := FtResponse{}
+	dataAll := []FtData{}
+	for _, ft := range fts {
 
-		data := FlightData{
-			ID:          f.ID,
-			Number:      f.Number,
-			AirlineCode: f.AirlineCode,
-			Destination: f.Destination,
-			Arrival:     f.Arrival,
+		data := FtData{
+			ID:          ft.ID,
+			Number:      ft.Number,
+			AirlineCode: ft.AirlineCode,
+			Destination: ft.Destination,
+			Arrival:     ft.Arrival,
 		}
 
 		dataAll = append(dataAll, data)
 
 	}
 
-	filghtReponses = FlightResponse{
+	ftRes = FtResponse{
 		Code:    0,
 		Message: "Success",
 		Data:    dataAll,
 	}
 
-	return filghtReponses, nil
+	return ftRes, nil
 
 }
 
-func (s flightService) GetFlight(id int) (*FlightResponse, error) {
-	flight, err := s.flightRepo.GetById(id)
+func (s ftService) GetFlight(id int) (*FtResponse, error) {
+	ftDb, err := s.ftRepo.GetById(id)
 	if err != nil {
 		return nil, err
 	}
 
-	dataAll := []FlightData{}
-	dataAll = append(dataAll, FlightData{
-		ID:          flight.ID,
-		Number:      flight.Number,
-		AirlineCode: flight.AirlineCode,
-		Destination: flight.Destination,
-		Arrival:     flight.Arrival,
+	d := []FtData{}
+	d = append(d, FtData{
+		ID:          ftDb.ID,
+		Number:      ftDb.Number,
+		AirlineCode: ftDb.AirlineCode,
+		Destination: ftDb.Destination,
+		Arrival:     ftDb.Arrival,
 	})
 
-	f := FlightResponse{
+	ftRes := FtResponse{
 		Code:    0,
 		Message: "Success",
-		Data:    dataAll}
+		Data:    d}
 
-	return &f, nil
+	return &ftRes, nil
 }
 
-func (s flightService) NewFlight(request NewFlightRequest) error {
+func (s ftService) NewFlight(fr FtRequest) error {
 
-	flight := FlightDB{
-		Number:      request.Number,
-		AirlineCode: request.AirlineCode,
-		Destination: request.Destination,
-		Arrival:     request.Arrival,
+	fdb := FtDB{
+		Number:      fr.Number,
+		AirlineCode: fr.AirlineCode,
+		Destination: fr.Destination,
+		Arrival:     fr.Arrival,
 	}
 
-	err := s.flightRepo.Create(flight)
+	err := s.ftRepo.Create(fdb)
 
 	return err
 }
 
-func (s flightService) UpdateFlight(id int, request NewFlightRequest) (*FlightResponse, error) {
+func (s ftService) UpdateFlight(id int, ftReq FtRequest) (*FtResponse, error) {
 
-	flightDB := FlightDB{
-		Number:      request.Number,
-		AirlineCode: request.AirlineCode,
-		Destination: request.Destination,
-		Arrival:     request.Arrival,
+	ftDb := FtDB{
+		Number:      ftReq.Number,
+		AirlineCode: ftReq.AirlineCode,
+		Destination: ftReq.Destination,
+		Arrival:     ftReq.Arrival,
 	}
 
-	flightDB, err := s.flightRepo.UpdateById(id, flightDB)
+	ftDb, err := s.ftRepo.UpdateById(id, ftDb)
 	if err != nil {
 		return nil, err
 	}
 
-	dataAll := []FlightData{}
-	flightData := FlightData{
-		ID:          flightDB.ID,
-		Number:      flightDB.Number,
-		AirlineCode: flightDB.AirlineCode,
-		Destination: flightDB.Destination,
-		Arrival:     flightDB.Arrival,
+	ds := []FtData{}
+	d := FtData{
+		ID:          ftDb.ID,
+		Number:      ftDb.Number,
+		AirlineCode: ftDb.AirlineCode,
+		Destination: ftDb.Destination,
+		Arrival:     ftDb.Arrival,
 	}
 
-	dataAll = append(dataAll, flightData)
-	response := &FlightResponse{
+	ds = append(ds, d)
+	ftRes := &FtResponse{
 		Code:    0,
 		Message: "Success",
-		Data:    dataAll,
+		Data:    ds,
 	}
 
-	return response, nil
+	return ftRes, nil
 }
 
-func (s flightService) DeleteFlight(id int) (*FlightResponse, error) {
-	err := s.flightRepo.DeleteById(id)
+func (s ftService) DeleteFlight(id int) (*FtResponse, error) {
+	err := s.ftRepo.DeleteById(id)
 	if err != nil {
 		return nil, err
 	}
 
-	response := &FlightResponse{
+	ftRes := &FtResponse{
 		Code:    0,
 		Message: "Success",
-		Data:    []FlightData{},
+		Data:    []FtData{},
 	}
 
-	return response, err
+	return ftRes, err
 }
