@@ -16,7 +16,7 @@ type ftRepository struct {
 	db *sql.DB
 }
 
-type FtRepository interface {
+type FtRepositoryDB interface {
 	GetAll() ([]FtDB, error)
 	GetById(int) (*FtDB, error)
 	Create(FtDB) error
@@ -24,7 +24,7 @@ type FtRepository interface {
 	DeleteById(int) error
 }
 
-func NewFlightRepositoryDB(db *sql.DB) FtRepository {
+func NewFlightRepositoryDB(db *sql.DB) FtRepositoryDB {
 	return ftRepository{db: db}
 }
 

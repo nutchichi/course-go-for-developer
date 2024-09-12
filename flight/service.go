@@ -30,10 +30,10 @@ type FtService interface {
 }
 
 type ftService struct {
-	ftRepo FtRepository
+	ftRepo FtRepositoryDB
 }
 
-func NewFlightService(flightRepo FtRepository) FtService {
+func NewFlightService(flightRepo FtRepositoryDB) FtService {
 	return ftService{ftRepo: flightRepo}
 }
 
